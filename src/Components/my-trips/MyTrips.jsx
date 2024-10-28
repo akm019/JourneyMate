@@ -36,7 +36,7 @@ const MyTrips = () => {
 
   return (
    <Link to={'/view-trips/'+ userTrips?.trip?.id}>
-    <div className='text-white'>
+    <div className='text-white bg-gradient-to-r from-black to-gray-900'>
       <h1 className='text-6xl font-light'>My <span className='text-purple-500'>Trips</span></h1>
 
       <div>

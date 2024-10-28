@@ -7,6 +7,8 @@ import axios from 'axios'
 import { doc, setDoc } from "firebase/firestore"; 
 import { db } from '@/Service/firebaseConfig';
 import { useNavigate } from 'react-router-dom';
+import Lottie from 'lottie-react';
+import ani from '../assets/Ani1.json'
 const Index = () => {
   const [selectedTravelOption, setSelectedTravelOption] = useState(null);
   const [selectedBox, setSelectedBox] = useState(null);
@@ -89,17 +91,21 @@ setLoading(true);
 
   const SaveAiTrip =async(TripData)=>{
    
-setLoading(true);
-    const user = JSON.parse(localStorage.getItem('user'))    
+    setLoading(true);
+    const user = JSON.parse(localStorage.getItem('user'))
     const docId = Date.now().toString()
     // Add a new document in collection "cities"
-    await setDoc(doc(db, "AITrips",docId), {
-     userSelection:formData,
-     tripData:JSON.parse(TripData),
-     userEmail:user?.email,
-     id:docId
-    
-    });
+    try {
+      await setDoc(doc(db, "AITrips",docId), {
+        userSelection:formData,
+        tripData:JSON.parse(TripData),
+        userEmail:user?.email,
+        id:docId
+       });
+    } catch (error) {
+      console.log(error)
+    }
+
 
     setLoading(false);
     navigate('/view-trip/'+docId)
@@ -109,106 +115,112 @@ setLoading(true);
 
   return (
     <div>
-      <div className='mt-20 flex flex-col gap-4 ml-10 items-center justify-center bg-black '>
-        <h1 className='sm:text-6xl md:text-6xl font-extralight'>Tell us your <span className='text-purple-500'>Travel preferences</span></h1>
-        <h1 className='text-2xl font-extralight'>
-          Just provide us some basic information and our trip planner will generate a customized itinerary based on your preferences.
-        </h1>
+      {loading?(<div className=' w-[50%] ml-[20%] md:w-[20%] md:ml-[40%]'><Lottie animationData={ani}></Lottie></div>):(<div className='min-h-screen bg-gradient-to-r from-black to-gray-900 p-10'>
+    <div className='pt-4 flex flex-col gap-6 items-center text-center text-white'>
+      <h1 className='sm:text-6xl md:text-6xl font-extralight'>
+        Tell us your <span className='bg-gradient-to-r from-purple-400 to-indigo-500 text-transparent bg-clip-text'>Travel preferences</span>
+      </h1>
+      <h1 className='text-xl sm:text-2xl font-extralight'>
+        Provide some basic details and our AI will generate a customized itinerary just for you.
+      </h1>
+    </div>
+  
+    <div className='mt-12 flex flex-col gap-6 items-center'>
+      <h1 className='font-extralight text-3xl'>Give a destination of your choice</h1>
+      <div className='w-[60%] text-black'>
+        <GooglePlacesAutocomplete
+          apiKey="AIzaSyDOIu1MDZsG4AVS4etHt5PParQJOHhAy3Q"
+          selectProps={{
+            place,
+            onChange: (e) => { setPlace(e); handleInputChange('location', e) },
+          }}
+        />
       </div>
-
-      <div className=' mt-10 flex flex-col gap-6 items-center justify-center'>
-        <h1 className='font-extralight text-4xl'>
-          Give a destination of your choice
+  
+      <div className='mt-10 flex flex-col gap-4 items-center'>
+        <h1 className='font-extralight text-3xl'>
+          How many days are you planning your trip for?
         </h1>
-        <div className='text-black w-[60%]'>
-          <GooglePlacesAutocomplete
-            apiKey="AIzaSyDOIu1MDZsG4AVS4etHt5PParQJOHhAy3Q"
-            selectProps={{
-              place,
-              onChange: (e) => { setPlace(e); handleInputChange('location', e) },
-            }}
-          />
-        </div>
-        <div className='mt-20 flex flex-col gap-6 items-center justify-center'>
-          <h1 className='font-extralight text-4xl'>
-            How many days you are planning your trip for?
-          </h1>
-          <input className='text-black w-[63%] md:w-[130%] rounded-sm h-10'
-            placeholder={'   Ex.3'}
-            type="number"
-            onChange={(e) => handleInputChange('noOfDays', e.target.value)}
-          />
-        </div>
-        <div className='mt-10 flex flex-col gap-10 items-center justify-center'>
-          <p className='font-extralight text-4xl'>What is your budget?</p>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {BudgetOptionsList.map(category => (
-              <div
-                key={category.id}
-                onClick={(e) => handleInputChange('budget', category.category)}
-                className={`border p-4 rounded-lg shadow-md ${formData?.budget === category.category && 'border-purple-500 scale-105'}`}
-              >
-                <h2 className="hover:shadow-white text-xl font-bold mb-4">{category.category}</h2>
-                {category.options.map(option => (
-                  <div key={option.id} className="mb-4">
-                    <h3 className="text-lg font-light">{option.title}</h3>
-                    <p className="font-extralight mb-2">{option.desc}</p>
-                    <div className="flex items-center mb-2">
-                      <div className="mr-2">{option.icon}</div>
-                      <p className="text-gray-600">{option.budget}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-        <h2 className="text-2xl font-bold mb-4">Select Travel Option</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {SelectTravelList.map((option) => (
+        <input
+          className='w-[60%] bg-gray-800 text-white rounded-sm h-10 p-4 placeholder-gray-500'
+          placeholder='Ex. 3 days'
+          type="number"
+          onChange={(e) => handleInputChange('noOfDays', e.target.value)}
+        />
+      </div>
+  
+      <div className='mt-10 flex flex-col gap-6 items-center'>
+        <h1 className='font-extralight text-3xl'>What is your budget?</h1>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 w-[80%]">
+          {BudgetOptionsList.map(category => (
             <div
-              key={option.id}
-              onClick={(e) => handleInputChange('travelers', option.people)}
-              className={`border p-4 rounded-lg shadow-md cursor-pointer transition-transform transform ${formData?.travelers === option.people && 'border-purple-500 scale-105'}`}
+              key={category.id}
+              onClick={(e) => handleInputChange('budget', category.category)}
+              className={`border p-6 rounded-lg shadow-md bg-gray-800 text-white transition-all transform hover:scale-105 ${formData?.budget === category.category && 'border-purple-500 scale-105'}`}
             >
-              <div className="flex justify-center mb-2">{option.icon}</div>
-              <h3 className="text-lg font-bold mb-1">{option.title}</h3>
-              <p className="text-gray-600">{option.desc}</p>
-              <p className="text-gray-500 text-sm">{option.people}</p>
+              <h2 className="text-xl font-bold mb-2">{category.category}</h2>
+              {category.options.map(option => (
+                <div key={option.id}>
+                  <h3 className="text-lg">{option.title}</h3>
+                  <p className="font-extralight">{option.desc}</p>
+                </div>
+              ))}
             </div>
           ))}
         </div>
-        <div>
-         
-          <button onClick={onGenerateTrip}>   {loading? "loading":"Generate"
-
-}</button>
+      </div>
+  
+      <h2 className="mt-10 text-2xl font-bold">Select Travel Option</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-[80%] mt-4">
+        {SelectTravelList.map((option) => (
+          <div
+            key={option.id}
+            onClick={(e) => handleInputChange('travelers', option.people)}
+            className={`border p-6 rounded-lg shadow-md cursor-pointer bg-gray-800 text-white hover:scale-105 transform transition-transform ${formData?.travelers === option.people && 'border-purple-500 scale-105'}`}
+          >
+            <div className="flex justify-center mb-2">{option.icon}</div>
+            <h3 className="text-lg font-bold">{option.title}</h3>
+            <p className="text-gray-400">{option.desc}</p>
+            <p className="text-gray-500 text-sm">{option.people}</p>
+          </div>
+        ))}
+      </div>
+       <button
+        className='mt-10 bg-gradient-to-r from-violet-500 via-sky-500 to-pink-500 text-white font-bold py-3 px-8 rounded-full transition-transform transform hover:scale-105'
+        onClick={onGenerateTrip}
+      >
+        Generate
+        
+      </button>
+    
+    </div>
+  
+    {openDialogue && (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+        <div className="bg-gray-900 p-8 rounded-lg shadow-lg text-white">
+          <h2 className="text-2xl font-bold mb-4">Login</h2>
+          <button
+            className="bg-blue-500 text-white p-4 rounded-lg w-full mb-4 flex items-center justify-center"
+            onClick={login}
+          >
+            <svg className='mr-2' xmlns="http://www.w3.org/2000/svg" width="30" height="20" viewBox="0 0 48 48">
+              {/* Google login icon */}
+              <path fill="#FFC107" d="M43.611,20.083..."></path>
+              {/* other paths for icon */}
+            </svg>
+            Login with Google
+          </button>
+          <button className="text-gray-400 underline" onClick={closeDialog}>
+            Close
+          </button>
         </div>
       </div>
-
-      {openDialogue && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-black border p-6 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold mb-4">Login</h2>
-            <button
-              className="bg-blue-500 text-white p-2 rounded-lg mb-4 w-full"
-              onClick={login}
-            >
-               <h2 className="text-xl font-bold mb-4 flex ">            <svg className='mt-2' xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="50" height="20" viewBox="0 0 48 48">
-<path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
-</svg>Login with Google</h2>
-            </button>
-          
-            <button
-              className="mt-4 text-gray-600 underline"
-              onClick={closeDialog}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+    )}
+  </div>)}
+     
     </div>
+    
+  
   
   );
 }
